@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Mind - Juego Multijugador</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fdbb2d;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .player-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .player {
+            flex: 1;
+            min-width: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .player.active {
+            background-color: rgba(253, 187, 45, 0.3);
+            border: 2px solid #fdbb2d;
+        }
+        
+        .player-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .card {
+            width: 40px;
+            height: 60px;
+            background-color: white;
+            color: #333;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card.played {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .card.selected {
+            transform: translateY(-10px);
+            box-shadow: 0 5px 15px rgba(253, 187, 45, 0.7);
+        }
+        
+        .center-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .played-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            min-height: 70px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #fdbb2d;
+            color: #1a2a6c;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #ffcc44;
+        }
+        
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .setup-screen, .game-screen, .end-screen {
+            display: none;
+        }
+        
+        .setup-screen.active, .game-screen.active, .end-screen.active {
+            display: block;
+        }
+        
+        .setup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .game-id {
+            font-size: 1.5em;
+            text-align: center;
+            margin: 20px 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+        .end-screen {
+            text-align: center;
+        }
+        
+        .end-screen h2 {
+            color: #fdbb2d;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .message.error {
+            background-color: rgba(255, 0, 0, 0.3);
+        }
+        
+        .message.success {
+            background-color: rgba(0, 255, 0, 0.3);
+        }
+        
+        @media (max-width: 600px) {
+            .player {
+                min-width: 100%;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>THE MIND</h1>
+        
+        <div class="setup-screen active">
+            <div class="setup-form">
+                <div class="form-group">
+                    <label for="playerName">Tu nombre:</label>
+                    <input type="text" id="playerName" placeholder="Introduce tu nombre" value="Jugador">
+                </div>
+                
+                <div class="form-group">
+                    <label for="numPlayers">Número de jugadores:</label>
+                    <select id="numPlayers">
+                        <option value="2">2 Jugadores</option>
+                        <option value="3">3 Jugadores</option>
+                        <option value="4" selected>4 Jugadores</option>
+                        <option value="5">5 Jugadores</option>
+                        <option value="6">6 Jugadores</option>
+                        <option value="7">7 Jugadores</option>
+                        <option value="8">8 Jugadores</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cardsPerPlayer">Cartas por jugador:</label>
+                    <select id="cardsPerPlayer">
+                        <option value="1">1 Carta</option>
+                        <option value="2">2 Cartas</option>
+                        <option value="3" selected>3 Cartas</option>
+                        <option value="4">4 Cartas</option>
+                        <option value="5">5 Cartas</option>
+                        <option value="6">6 Cartas</option>
+                        <option value="7">7 Cartas</option>
+                        <option value="8">8 Cartas</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gameCode">Código de juego (dejar vacío para crear uno nuevo):</label>
+                    <input type="text" id="gameCode" placeholder="Código del juego">
+                </div>
+                
+                <button id="startGame">Iniciar Juego</button>
+            </div>
+        </div>
+        
+        <div class="game-screen">
+            <div class="game-info">
+                <div>Jugadores: <span id="currentPlayers">0</span>/<span id="totalPlayers">0</span></div>
+                <div>Cartas jugadas: <span id="cardsPlayed">0</span>/<span id="totalCards">0</span></div>
+                <div>Nivel: <span id="currentLevel">1</span></div>
+            </div>
+            
+            <div class="game-id">
+                Código del juego: <span id="displayGameCode">XXXX</span>
+            </div>
+            
+            <div class="player-info" id="playersContainer">
+                <!-- Los jugadores se generarán dinámicamente aquí -->
+            </div>
+            
+            <div class="center-area">
+                <h3>Cartas Jugadas</h3>
+                <div class="played-cards" id="playedCards">
+                    <!-- Las cartas jugadas aparecerán aquí -->
+                </div>
+                
+                <div class="message" id="gameMessage"></div>
+                
+                <div class="controls">
+                    <button id="playCard" disabled>Jugar Carta</button>
+                    <button id="endGame">Terminar Juego</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="end-screen">
+            <h2>¡Juego Terminado!</h2>
+            <p id="endMessage"></p>
+            <button id="playAgain">Jugar Otra Vez</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables del juego
+        let gameState = {
+            players: [],
+            currentPlayerIndex: 0,
+            playedCards: [],
+            gameCode: '',
+            totalCards: 0,
+            cardsPerPlayer: 3,
+            gameStarted: false,
+            gameOver: false,
+            selectedCard: null
+        };
+
+        // Elementos DOM
+        const setupScreen = document.querySelector('.setup-screen');
+        const gameScreen = document.querySelector('.game-screen');
+        const endScreen = document.querySelector('.end-screen');
+        const startGameBtn = document.getElementById('startGame');
+        const playCardBtn = document.getElementById('playCard');
+        const endGameBtn = document.getElementById('endGame');
+        const playAgainBtn = document.getElementById('playAgain');
+        const playersContainer = document.getElementById('playersContainer');
+        const playedCardsContainer = document.getElementById('playedCards');
+        const gameMessage = document.getElementById('gameMessage');
+        const endMessage = document.getElementById('endMessage');
+        const currentPlayersSpan = document.getElementById('currentPlayers');
+        const totalPlayersSpan = document.getElementById('totalPlayers');
+        const cardsPlayedSpan = document.getElementById('cardsPlayed');
+        const totalCardsSpan = document.getElementById('totalCards');
+        const currentLevelSpan = document.getElementById('currentLevel');
+        const displayGameCode = document.getElementById('displayGameCode');
+
+        // Inicialización del juego
+        function init() {
+            startGameBtn.addEventListener('click', startGame);
+            playCardBtn.addEventListener('click', playCard);
+            endGameBtn.addEventListener('click', endGame);
+            playAgainBtn.addEventListener('click', resetGame);
+        }
+
+        // Iniciar el juego
+        function startGame() {
+            const playerName = document.getElementById('playerName').value || 'Jugador';
+            const numPlayers = parseInt(document.getElementById('numPlayers').value);
+            const cardsPerPlayer = parseInt(document.getElementById('cardsPerPlayer').value);
+            const gameCodeInput = document.getElementById('gameCode').value;
+            
+            // Generar o usar código de juego
+            gameState.gameCode = gameCodeInput || generateGameCode();
+            gameState.cardsPerPlayer = cardsPerPlayer;
+            
+            // Crear jugadores
+            gameState.players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                const name = i === 0 ? playerName : `Jugador ${i+1}`;
+                gameState.players.push({
+                    id: i,
+                    name: name,
+                    cards: [],
+                    isActive: i === 0
+                });
+            }
+            
+            // Repartir cartas
+            dealCards();
+            
+            // Actualizar UI
+            updateGameUI();
+            
+            // Cambiar pantallas
+            setupScreen.classList.remove('active');
+            gameScreen.classList.add('active');
+            
+            // Mostrar código del juego
+            displayGameCode.textContent = gameState.gameCode;
+            
+            // Simular conexión multijugador (en una implementación real, aquí iría la lógica de red)
+            simulateMultiplayer();
+        }
+
+        // Generar código de juego aleatorio
+        function generateGameCode() {
+            return Math.random().toString(36).substring(2, 6).toUpperCase();
+        }
+
+        // Repartir cartas
+        function dealCards() {
+            // Crear mazo de 1 a 100
+            const deck = [];
+            for (let i = 1; i <= 100; i++) {
+                deck.push(i);
+            }
+            
+            // Barajar el mazo
+            shuffleArray(deck);
+            
+            // Repartir cartas a cada jugador
+            gameState.players.forEach(player => {
+                player.cards = deck.splice(0, gameState.cardsPerPlayer);
+                player.cards.sort((a, b) => a - b); // Ordenar las cartas del jugador
+            });
+            
+            // Calcular total de cartas
+            gameState.totalCards = gameState.players.length * gameState.cardsPerPlayer;
+        }
+
+        // Barajar array (algoritmo Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Actualizar la interfaz de usuario del juego
+        function updateGameUI() {
+            // Actualizar información del juego
+            currentPlayersSpan.textContent = gameState.players.length;
+            totalPlayersSpan.textContent = gameState.players.length;
+            cardsPlayedSpan.textContent = gameState.playedCards.length;
+            totalCardsSpan.textContent = gameState.totalCards;
+            currentLevelSpan.textContent = Math.floor(gameState.playedCards.length / gameState.players.length) + 1;
+            
+            // Actualizar información de jugadores
+            playersContainer.innerHTML = '';
+            gameState.players.forEach((player, index) => {
+                const playerElement = document.createElement('div');
+                playerElement.className = `player ${player.isActive ? 'active' : ''}`;
+                
+                const playerName = document.createElement('div');
+                playerName.textContent = player.name;
+                
+                const playerCards = document.createElement('div');
+                playerCards.className = 'player-cards';
+                
+                // Solo mostrar las cartas del jugador activo (el usuario actual)
+                if (player.isActive) {
+                    player.cards.forEach(card => {
+                        const cardElement = document.createElement('div');
+                        cardElement.className = `card ${gameState.selectedCard === card ? 'selected' : ''}`;
+                        cardElement.textContent = card;
+                        cardElement.dataset.card = card;
+                        
+                        cardElement.addEventListener('click', () => selectCard(card));
+                        
+                        playerCards.appendChild(cardElement);
+                    });
+                } else {
+                    // Para otros jugadores, mostrar cartas ocultas
+                    for (let i = 0; i < player.cards.length; i++) {
+                        const cardElement = document.createElement('div');
+                        cardElement.className = 'card';
+                        cardElement.textContent = '?';
+                        cardElement.style.backgroundColor = '#333';
+                        cardElement.style.color = 'white';
+                        playerCards.appendChild(cardElement);
+                    }
+                }
+                
+                playerElement.appendChild(playerName);
+                playerElement.appendChild(playerCards);
+                playersContainer.appendChild(playerElement);
+            });
+            
+            // Actualizar cartas jugadas
+            playedCardsContainer.innerHTML = '';
+            gameState.playedCards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card played';
+                cardElement.textContent = card;
+                playedCardsContainer.appendChild(cardElement);
+            });
+            
+            // Habilitar/deshabilitar botón de jugar carta
+            const activePlayer = gameState.players.find(p => p.isActive);
+            playCardBtn.disabled = !activePlayer || activePlayer.cards.length === 0 || !gameState.selectedCard;
+            
+            // Mostrar mensaje si es necesario
+            if (gameState.playedCards.length > 0) {
+                const lastCard = gameState.playedCards[gameState.playedCards.length - 1];
+                if (gameState.selectedCard && gameState.selectedCard < lastCard) {
+                    showMessage('¡Cuidado! Tu carta es menor que la última jugada.', 'error');
+                } else {
+                    clearMessage();
+                }
+            }
+        }
+
+        // Seleccionar una carta
+        function selectCard(cardValue) {
+            gameState.selectedCard = cardValue;
+            updateGameUI();
+        }
+
+        // Jugar carta seleccionada
+        function playCard() {
+            if (!gameState.selectedCard) return;
+            
+            const activePlayer = gameState.players.find(p => p.isActive);
+            if (!activePlayer) return;
+            
+            // Verificar si la carta es válida
+            if (gameState.playedCards.length > 0) {
+                const lastCard = gameState.playedCards[gameState.playedCards.length - 1];
+                if (gameState.selectedCard < lastCard) {
+                    showMessage('¡Error! No puedes jugar una carta menor que la última jugada.', 'error');
+                    return;
+                }
+            }
+            
+            // Quitar la carta del jugador
+            const cardIndex = activePlayer.cards.indexOf(gameState.selectedCard);
+            if (cardIndex !== -1) {
+                activePlayer.cards.splice(cardIndex, 1);
+            }
+            
+            // Añadir la carta a las jugadas
+            gameState.playedCards.push(gameState.selectedCard);
+            
+            // Limpiar selección
+            gameState.selectedCard = null;
+            
+            // Verificar si el juego ha terminado
+            if (gameState.playedCards.length === gameState.totalCards) {
+                endGame(true);
+                return;
+            }
+            
+            updateGameUI();
+        }
+
+        // Terminar el juego
+        function endGame(success = false) {
+            gameState.gameOver = true;
+            
+            gameScreen.classList.remove('active');
+            endScreen.classList.add('active');
+            
+            if (success) {
+                endMessage.textContent = '¡Felicidades! Han completado el nivel con éxito.';
+            } else {
+                endMessage.textContent = 'El juego ha terminado. Mejor suerte la próxima vez.';
+            }
+        }
+
+        // Reiniciar el juego
+        function resetGame() {
+            gameState = {
+                players: [],
+                currentPlayerIndex: 0,
+                playedCards: [],
+                gameCode: '',
+                totalCards: 0,
+                cardsPerPlayer: 3,
+                gameStarted: false,
+                gameOver: false,
+                selectedCard: null
+            };
+            
+            endScreen.classList.remove('active');
+            setupScreen.classList.add('active');
+            
+            clearMessage();
+        }
+
+        // Mostrar mensaje
+        function showMessage(text, type = 'info') {
+            gameMessage.textContent = text;
+            gameMessage.className = `message ${type}`;
+        }
+
+        // Limpiar mensaje
+        function clearMessage() {
+            gameMessage.textContent = '';
+            gameMessage.className = 'message';
+        }
+
+        // Simular funcionalidad multijugador (en una implementación real, esto se haría con WebSockets)
+        function simulateMultiplayer() {
+            // En una implementación real, aquí se conectaría a un servidor
+            // y se manejarían eventos de otros jugadores
+            console.log('Conectando al juego multijugador...');
+        }
+
+        // Inicializar el juego cuando se carga la página
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
