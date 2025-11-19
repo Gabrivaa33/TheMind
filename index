@@ -1,172 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Mind - Instant Death</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>The Mind - Muerte Instantánea</title>
 
   <style>
-    * { box-sizing: border-box; margin:0; padding:0; font-family:'Segoe UI', Tahoma, sans-serif; }
-    body {
-      background: linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d);
-      color:white; min-height:100vh; padding:20px;
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;}
+    body{
+      background:linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d);
+      min-height:100vh;color:white;padding:20px;
     }
-
-    .container {
-      max-width:900px; margin:0 auto;
-      background-color:rgba(0,0,0,0.7);
-      border-radius:15px; padding:20px;
+    .container{
+      max-width:900px;margin:0 auto;
+      background:rgba(0,0,0,0.7);
+      padding:20px;border-radius:15px;
       box-shadow:0 10px 30px rgba(0,0,0,0.5);
     }
+    h1{text-align:center;color:#fdbb2d;margin-bottom:20px;}
 
-    h1 {
-      text-align:center; margin-bottom:20px;
-      color:#fdbb2d; text-shadow:0 2px 5px rgba(0,0,0,0.5);
+    /* MENÚ INICIAL ORIGINAL */
+    .setup-screen{display:none;max-width:420px;margin:0 auto;padding:20px;}
+    .setup-screen.active{display:block;}
+    .setup-row{display:flex;flex-direction:column;margin-bottom:12px;gap:4px;}
+    .setup-input{padding:8px;border-radius:6px;border:none;outline:none;}
+    .setup-buttons{display:flex;justify-content:center;gap:12px;margin-top:10px;}
+    button.primary{
+      background:#fdbb2d;color:#1a2a6c;font-weight:bold;
+      padding:10px 18px;border:none;border-radius:6px;
+    }
+    button.secondary{
+      background:white;color:#1a2a6c;font-weight:bold;
+      padding:10px 18px;border:none;border-radius:6px;
     }
 
-    /* ---------- jugador ---------- */
-
-    .waiting-player,
-    .player {
-      background-color:rgba(255,255,255,0.06);
-      padding:10px; border-radius:10px;
-      min-width:150px; text-align:center;
+    /* WAITING */
+    .waiting-screen{display:none;}
+    .waiting-screen.active{display:block;}
+    .waiting-players{
+      display:flex;flex-wrap:wrap;gap:10px;
+      justify-content:center;margin:15px 0;
+    }
+    .waiting-player{
+      padding:10px;border-radius:10px;
+      min-width:140px;text-align:center;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.1);
     }
 
-    .player-name { font-weight:bold; margin-bottom:8px; }
+    /* GAME */
+    .game-screen{display:none;}
+    .game-screen.active{display:block;}
+    .player-info{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+    .player{
+      background:rgba(255,255,255,0.06);
+      border-radius:10px;padding:10px;
+      min-width:150px;text-align:center;
+    }
+    .player-name{font-weight:bold;margin-bottom:6px;}
 
-    .player-info { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+    .player-cards{
+      display:flex;justify-content:center;gap:6px;flex-wrap:wrap;
+    }
+    .card{
+      width:48px;height:68px;
+      background:white;color:#333;border-radius:6px;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:bold;cursor:pointer;
+      transition:.15s;box-shadow:0 2px 6px rgba(0,0,0,0.4);
+    }
+    .card:hover{transform:translateY(-6px);}
+    .card.selected{transform:translateY(-10px);box-shadow:0 6px 18px rgba(253,187,45,0.7);}
+    .card.blocked{background:#ff4444;color:white;cursor:not-allowed;}
+    .card.played{background:#4CAF50;color:white;}
 
-    .player-cards {
-      display:flex; gap:6px; justify-content:center; flex-wrap:wrap;
+    .played-cards{
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+      background:rgba(255,255,255,0.06);
+      padding:10px;border-radius:10px;margin-bottom:10px;
     }
 
-    /* ---------- cartas ---------- */
+    .controls{display:flex;gap:10px;justify-content:center;margin:12px 0;}
+    button{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;font-weight:bold;}
+    button:hover{opacity:0.9;}
+    button:disabled{background:#555;cursor:not-allowed;}
 
-    .card {
-      width:48px; height:68px;
-      background-color:white; color:#333;
-      border-radius:6px; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-      font-weight:bold;
-      transition:transform .15s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    .message{
+      text-align:center;margin-top:8px;padding:10px;border-radius:6px;
     }
+    .message.error{background:rgba(255,0,0,0.3);}
+    .message.warning{background:rgba(255,165,0,0.25);}
+    .message.success{background:rgba(0,200,0,0.25);}
 
-    .card:hover { transform: translateY(-6px); }
-
-    .card.played {
-      background-color:#4CAF50; color:white;
-    }
-
-    .card.selected {
-      transform: translateY(-10px);
-      box-shadow: 0 6px 18px rgba(253,187,45,0.7);
-    }
-
-    .card.blocked {
-      background-color:#ff4444; color:white;
-      cursor:not-allowed;
-    }
-
-    /* ---------- pantallas ---------- */
-
-    .setup-screen, .waiting-screen,
-    .game-screen, .end-screen { display:none; }
-
-    .active { display:block; }
-
-    .waiting-players {
-      display:flex; flex-wrap:wrap;
-      gap:10px; justify-content:center;
-      margin:15px 0;
-    }
-
-    .played-cards {
-      display:flex; gap:10px; flex-wrap:wrap;
-      justify-content:center;
-      min-height:80px;
-      padding:10px;
-      background-color:rgba(255,255,255,0.06);
-      border-radius:10px;
-      margin-bottom:10px;
-    }
-
-    /* ---------- controles ---------- */
-
-    button {
-      padding:10px 18px;
-      background-color:#fdbb2d;
-      color:#1a2a6c;
-      border:none; border-radius:6px;
-      font-weight:bold; cursor:pointer;
-    }
-
-    .controls { display:flex; gap:10px; justify-content:center; margin:12px 0; }
-
-    button:hover { background-color:#ffcc44; }
-    button:disabled { background-color:#666; cursor:not-allowed; }
-
-    /* ---------- mensajes ---------- */
-
-    .message {
-      padding:10px; margin:8px 0; border-radius:6px; text-align:center;
-    }
-    .message.error { background:rgba(255,0,0,0.3); }
-    .message.success { background:rgba(0,200,0,0.25); }
-    .message.warning { background:rgba(255,165,0,0.25); }
-
+    /* END */
+    .end-screen{display:none;text-align:center;}
+    .end-screen.active{display:block;}
   </style>
 </head>
 
 <body>
 <div class="container">
-  <h1>THE MIND — MUERTE INSTANTÁNEA</h1>
+  <h1>The Mind — Muerte Instantánea</h1>
 
-  <!-- SETUP ---------------------------------------------------- -->
+  <!-- MENU INICIAL ORIGINAL -->
   <div class="setup-screen active">
-    <div style="max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:12px;">
-      <div>
-        <label>Tu nombre:</label>
-        <input id="playerName" value="Jugador" />
-      </div>
+    <h2 style="text-align:center;margin-bottom:15px;">Crear o unirse a una partida</h2>
 
-      <div>
-        <label>Nº jugadores:</label>
-        <select id="numPlayers">
-          <option>2</option><option>3</option><option selected>4</option>
-          <option>5</option><option>6</option>
-        </select>
-      </div>
+    <div class="setup-row">
+      <label>Tu nombre:</label>
+      <input id="playerName" class="setup-input" value="Jugador">
+    </div>
 
-      <div>
-        <label>Cartas por jugador:</label>
-        <select id="cardsPerPlayer">
-          <option>1</option><option>2</option>
-          <option selected>3</option><option>4</option><option>5</option>
-        </select>
-      </div>
+    <div class="setup-row">
+      <label>Nº jugadores:</label>
+      <select id="numPlayers" class="setup-input">
+        <option>2</option><option>3</option>
+        <option selected>4</option>
+        <option>5</option><option>6</option>
+      </select>
+    </div>
 
-      <div>
-        <label>Código de juego (si te unes):</label>
-        <input id="gameCode" placeholder="Código" />
-      </div>
+    <div class="setup-row">
+      <label>Cartas por jugador:</label>
+      <select id="cardsPerPlayer" class="setup-input">
+        <option>1</option><option>2</option>
+        <option selected>3</option><option>4</option><option>5</option>
+      </select>
+    </div>
 
-      <div style="display:flex; gap:8px;">
-        <button id="createGame">Crear</button>
-        <button id="joinGame">Unirse</button>
-      </div>
+    <div class="setup-row">
+      <label>Código (para unirse):</label>
+      <input id="gameCode" class="setup-input" placeholder="ABC1">
+    </div>
+
+    <div class="setup-buttons">
+      <button id="createGame" class="primary">Crear Partida</button>
+      <button id="joinGame" class="secondary">Unirse</button>
     </div>
   </div>
 
-  <!-- ESPERA ---------------------------------------------------- -->
+  <!-- WAITING -->
   <div class="waiting-screen">
-    <h2>Esperando jugadores…</h2>
-    <div style="text-align:center;font-size:1.3em;margin:10px;">
-      Código: <span id="displayGameCode">----</span>
-    </div>
-
-    <div class="waiting-players" id="waitingPlayers"></div>
+    <h2 style="text-align:center;margin-bottom:10px;">Esperando jugadores…</h2>
+    <h3 style="text-align:center;">Código: <span id="displayGameCode">----</span></h3>
+    <div id="waitingPlayers" class="waiting-players"></div>
 
     <div class="controls">
       <button id="startGame">Iniciar</button>
@@ -174,17 +151,17 @@
     </div>
   </div>
 
-  <!-- JUEGO ----------------------------------------------------- -->
+  <!-- GAME -->
   <div class="game-screen">
-    <div id="info" style="display:flex;justify-content:space-between;margin:10px 0">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
       <div>Jugadores: <span id="pcount"></span></div>
       <div>Jugadas: <span id="playedCount"></span>/<span id="totalCount"></span></div>
     </div>
 
-    <div class="player-info" id="playersContainer"></div>
+    <div id="playersContainer" class="player-info"></div>
 
     <h3 style="text-align:center;">Cartas jugadas</h3>
-    <div class="played-cards" id="playedCards"></div>
+    <div id="playedCards" class="played-cards"></div>
 
     <div id="gameMessage" class="message" style="display:none;"></div>
 
@@ -194,7 +171,7 @@
     </div>
   </div>
 
-  <!-- FIN ------------------------------------------------------- -->
+  <!-- END -->
   <div class="end-screen">
     <h2 id="endTitle"></h2>
     <p id="endDetails"></p>
@@ -203,580 +180,366 @@
 
 </div>
 
+<!-- ======================================================
+     ===============  SCRIPT COMPLETO  =====================
+     ======================================================-->
 <script>
-  /* ===========================================================
-     PARTE 2 - LÓGICA COMPLETA
-     Pegar esto donde estaba el placeholder en la PARTE 1
-     =========================================================== */
-
   (function(){
-    // Estado local del cliente
-    let localState = {
-      playerId: null,
-      players: [],
-      playedCards: [],
-      gameCode: '',
-      cardsPerPlayer: 3,
-      totalCards: 0,
-      gameStarted: false,
-      gameOver: false,
-      selectedCard: null,
-      isHost: false
+    let localState={
+      playerId:null,players:[],playedCards:[],
+      gameCode:'',cardsPerPlayer:3,totalCards:0,
+      gameStarted:false,gameOver:false,selectedCard:null,isHost:false
     };
 
-    // DOM references (de la PARTE 1)
-    const createBtn = document.getElementById('createGame');
-    const joinBtn = document.getElementById('joinGame');
-    const startBtn = document.getElementById('startGame');
-    const cancelBtn = document.getElementById('cancelGame');
-    const playBtn = document.getElementById('playCard');
-    const endBtn = document.getElementById('endGame');
-    const playAgainBtn = document.getElementById('playAgain'); // may be absent but safe
+    function $(id){return document.getElementById(id);}
 
-    const waitingPlayersEl = document.getElementById('waitingPlayers');
-    const playersContainer = document.getElementById('playersContainer');
-    const playedCardsEl = document.getElementById('playedCards');
-    const msgEl = document.getElementById('gameMessage');
+    const createBtn=$("createGame"),joinBtn=$("joinGame"),
+      startBtn=$("startGame"),cancelBtn=$("cancelGame"),
+      playBtn=$("playCard"),endBtn=$("endGame"),playAgainBtn=$("playAgain"),
+      waitingPlayersEl=$("waitingPlayers"),playersContainer=$("playersContainer"),
+      playedCardsEl=$("playedCards"),msgEl=$("gameMessage"),
+      pcountEl=$("pcount"),playedCountEl=$("playedCount"),
+      totalCountEl=$("totalCount"),displayGameCodeEl=$("displayGameCode");
 
-    const pcountEl = document.getElementById('pcount');
-    const playedCountEl = document.getElementById('playedCount');
-    const totalCountEl = document.getElementById('totalCount');
-    const displayGameCodeEl = document.getElementById('displayGameCode');
+    const setupScreen=document.querySelector(".setup-screen"),
+      waitingScreen=document.querySelector(".waiting-screen"),
+      gameScreen=document.querySelector(".game-screen"),
+      endScreen=document.querySelector(".end-screen"),
+      endTitle=$("endTitle"),endDetails=$("endDetails");
 
-    const setupScreen = document.querySelector('.setup-screen');
-    const waitingScreen = document.querySelector('.waiting-screen');
-    const gameScreen = document.querySelector('.game-screen');
-    const endScreen = document.querySelector('.end-screen');
-    const endTitle = document.getElementById('endTitle');
-    const endDetails = document.getElementById('endDetails');
+    /* INITIALIZE */
+    (function init(){
+      let pid=sessionStorage.getItem("tm_player_id");
+      if(!pid){pid="p_"+Math.random().toString(36).substr(2,9);sessionStorage.setItem("tm_player_id",pid);}
+      localState.playerId=pid;
 
-    // init
-    function init() {
-      // assign persistent player id
-      let existing = sessionStorage.getItem('tm_player_id');
-      if (!existing) {
-        existing = 'player_' + Math.random().toString(36).substr(2,9);
-        sessionStorage.setItem('tm_player_id', existing);
-      }
-      localState.playerId = existing;
+      createBtn.onclick=createGame;
+      joinBtn.onclick=joinGame;
+      startBtn.onclick=startGameFromWaiting;
+      cancelBtn.onclick=cancelGame;
+      playBtn.onclick=playCard;
+      endBtn.onclick=()=>endGameImmediate(false,"manual");
+      playAgainBtn.onclick=resetToSetup;
 
-      // wire buttons
-      createBtn && createBtn.addEventListener('click', createGame);
-      joinBtn && joinBtn.addEventListener('click', joinGame);
-      startBtn && startBtn.addEventListener('click', startGameFromWaiting);
-      cancelBtn && cancelBtn.addEventListener('click', cancelGame);
-      playBtn && playBtn.addEventListener('click', playCard);
-      endBtn && endBtn.addEventListener('click', () => endGameImmediate(false, 'manual'));
-      playAgainBtn && playAgainBtn.addEventListener('click', resetToSetup);
+      window.addEventListener("storage",storageSync);
+      setInterval(pollSync,1000);
+    })();
 
-      // storage events (sync between tabs)
-      window.addEventListener('storage', (e) => {
-        if (!e.key) return;
-        if (!localState.gameCode) return;
-        const expectedKey = 'mind_game_' + localState.gameCode;
-        if (e.key === expectedKey) {
-          // reload view from storage
-          const raw = localStorage.getItem(expectedKey);
-          if (!raw) {
-            // game removed (cancelled)
-            showTempMessage('El juego fue cancelado', 'error');
-            resetToSetup();
-            return;
-          }
-          const gd = JSON.parse(raw);
-          if (gd.gameStarted && !localState.gameStarted) {
-            // somebody started the game: join it
-            startGame();
-            return;
-          }
-          if (localState.gameStarted) {
-            // in-game sync
-            syncFromStorage();
-          } else {
-            updateWaitingPlayers();
-          }
-        }
-      });
-
-      // lightweight polling to keep UI updated (helps when storage events fail)
-      setInterval(() => {
-        if (!localState.gameCode) return;
-        const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-        if (!raw) return;
-        const gd = JSON.parse(raw);
-        if (localState.gameStarted) {
-          syncFromStorage();
-        } else {
-          updateWaitingPlayers();
-        }
-      }, 1000);
-    }
-
-    /* -----------------------------
-       Crear y unirse a un juego
-       ----------------------------- */
+    /* --------- CREATE / JOIN --------- */
     function createGame(){
-      const name = (document.getElementById('playerName') || {}).value || 'Jugador';
-      const maxPlayers = parseInt((document.getElementById('numPlayers') || {}).value || 4, 10);
-      const cardsPer = parseInt((document.getElementById('cardsPerPlayer') || {}).value || 3, 10);
-      const codeInput = (document.getElementById('gameCode') || {}).value;
+      const name=$("playerName").value||"Jugador";
+      const maxPlayers=parseInt($("numPlayers").value);
+      const cards=parseInt($("cardsPerPlayer").value);
+      const codeInput=$("gameCode").value;
+      const code=(codeInput?codeInput.toUpperCase():genCode());
 
-      const code = codeInput ? String(codeInput).toUpperCase() : generateCode();
-      localState.gameCode = code;
-      localState.isHost = true;
-      localState.cardsPerPlayer = cardsPer;
+      localState.isHost=true;
+      localState.gameCode=code;
+      localState.cardsPerPlayer=cards;
 
-      const gameData = {
-        code: code,
-        host: localState.playerId,
-        maxPlayers: maxPlayers,
-        cardsPerPlayer: cardsPer,
-        players: [{
-          id: localState.playerId,
-          name: name,
-          joined: true
-        }],
-        gameStarted: false,
-        playedCards: [],
-        deck: [],
-        gameOver: false
+      const gd={
+        code,host:localState.playerId,maxPlayers,cardsPerPlayer:cards,
+        players:[{id:localState.playerId,name,joined:true}],
+        gameStarted:false,playedCards:[],deck:[],gameOver:false
       };
-
-      localStorage.setItem('mind_game_' + code, JSON.stringify(gameData));
-      showWaitingScreen();
+      localStorage.setItem("mind_game_"+code,JSON.stringify(gd));
+      showWaiting();
     }
 
     function joinGame(){
-      const name = (document.getElementById('playerName') || {}).value || 'Jugador';
-      const codeInput = (document.getElementById('gameCode') || {}).value;
-      if (!codeInput) {
-        showTempMessage('Introduce un código de juego', 'error');
-        return;
-      }
-      const code = String(codeInput).toUpperCase();
-      const raw = localStorage.getItem('mind_game_' + code);
-      if (!raw) {
-        showTempMessage('No se encontró un juego con ese código', 'error');
-        return;
-      }
-      const gd = JSON.parse(raw);
-      if (gd.gameStarted) {
-        showTempMessage('El juego ya ha comenzado', 'error');
-        return;
-      }
-      if (gd.players.length >= gd.maxPlayers) {
-        showTempMessage('El juego está lleno', 'error');
-        return;
-      }
+      const name=$("playerName").value||"Jugador";
+      const code=($("gameCode").value||"").toUpperCase();
+      if(!code)return m("Introduce un código","error");
 
-      // add player
-      gd.players.push({ id: localState.playerId, name: name, joined: true });
-      localStorage.setItem('mind_game_' + code, JSON.stringify(gd));
-      localState.gameCode = code;
-      localState.cardsPerPlayer = gd.cardsPerPlayer;
-      localState.isHost = false;
-      showWaitingScreen();
+      let raw=localStorage.getItem("mind_game_"+code);
+      if(!raw)return m("Juego no encontrado","error");
+
+      let gd=JSON.parse(raw);
+      if(gd.gameStarted)return m("El juego ya comenzó","error");
+      if(gd.players.length>=gd.maxPlayers)return m("Partida llena","error");
+
+      gd.players.push({id:localState.playerId,name,joined:true});
+      localStorage.setItem("mind_game_"+code,JSON.stringify(gd));
+
+      localState.isHost=false;
+      localState.gameCode=code;
+      localState.cardsPerPlayer=gd.cardsPerPlayer;
+      showWaiting();
     }
 
-    function showWaitingScreen(){
-      setupScreen.classList.remove('active');
-      waitingScreen.classList.add('active');
-      displayGameCodeEl.textContent = localState.gameCode || '----';
-      updateWaitingPlayers();
+    function showWaiting(){
+      setupScreen.classList.remove("active");
+      waitingScreen.classList.add("active");
+      updateWaiting();
     }
 
-    function updateWaitingPlayers(){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
+    function updateWaiting(){
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      const gd=JSON.parse(raw);
 
-      waitingPlayersEl.innerHTML = '';
-      for (let i=0; i<gd.maxPlayers; i++){
-        const slot = document.createElement('div');
-        slot.className = 'waiting-player';
-        if (i < gd.players.length){
-          slot.textContent = gd.players[i].name;
-          slot.classList.add('joined');
-          // ensure visible background for joined slot (inline style to guarantee color)
-          slot.style.backgroundColor = 'rgba(253,187,45,0.12)';
-          slot.style.border = '1px solid rgba(253,187,45,0.25)';
-        } else {
-          slot.textContent = 'Esperando...';
-          slot.style.backgroundColor = '';
-          slot.style.border = '';
+      waitingPlayersEl.innerHTML="";
+      for(let i=0;i<gd.maxPlayers;i++){
+        const el=document.createElement("div");
+        el.className="waiting-player";
+        if(i<gd.players.length){
+          el.textContent=gd.players[i].name;
+          el.style.background="rgba(253,187,45,0.12)";
+          el.style.border="1px solid rgba(253,187,45,0.25)";
+        }else{
+          el.textContent="Esperando…";
         }
-        waitingPlayersEl.appendChild(slot);
+        waitingPlayersEl.appendChild(el);
       }
-
-      pcountEl && (pcountEl.textContent = gd.players.length);
-      totalCountEl && (totalCountEl.textContent = gd.maxPlayers);
-      displayGameCodeEl && (displayGameCodeEl.textContent = gd.code);
+      displayGameCodeEl.textContent=gd.code;
     }
 
-    function checkWaitingAndStart(){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) {
-        showTempMessage('El juego fue cancelado', 'error');
-        resetToSetup();
-        return;
-      }
-      const gd = JSON.parse(raw);
-      if (gd.gameStarted) {
-        startGame(); return;
-      }
-      // continue checking
-      setTimeout(checkWaitingAndStart, 1000);
-    }
-
-    /* -----------------------------
-       Reparto e inicio de la partida
-       ----------------------------- */
+    /* --------- START GAME --------- */
     function startGameFromWaiting(){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
-      if (gd.players.length < 2) {
-        showTempMessage('Se necesitan al menos 2 jugadores', 'error');
-        return;
-      }
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      const gd=JSON.parse(raw);
 
-      // deal
-      gd.playedCards = [];
-      gd.gameOver = false;
-      gd.gameStarted = true;
-      // create deck and deal
-      const deck = [];
-      for (let i=1;i<=100;i++) deck.push(i);
+      if(gd.players.length<2)return m("Mínimo 2 jugadores","error");
+
+      const deck=[...Array(100).keys()].map(n=>n+1);
       shuffle(deck);
-      gd.players.forEach(p => {
-        p.cards = deck.splice(0, gd.cardsPerPlayer).sort((a,b)=>a-b);
+      gd.gameStarted=true;
+      gd.playedCards=[];
+      gd.players.forEach(p=>{
+        p.cards=deck.splice(0,gd.cardsPerPlayer).sort((a,b)=>a-b);
       });
-      gd.deck = deck;
+      gd.deck=deck;
 
-      localStorage.setItem('mind_game_' + localState.gameCode, JSON.stringify(gd));
+      localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
       startGame();
     }
 
     function startGame(){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
-      if (!gd.gameStarted || gd.gameOver) return;
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      const gd=JSON.parse(raw);
 
-      localState.players = gd.players;
-      localState.playedCards = gd.playedCards || [];
-      localState.cardsPerPlayer = gd.cardsPerPlayer;
-      localState.totalCards = gd.players.length * gd.cardsPerPlayer;
-      localState.gameStarted = true;
-      localState.gameOver = false;
-      localState.selectedCard = null;
+      localState.players=gd.players;
+      localState.playedCards=gd.playedCards;
+      localState.totalCards=gd.players.length*gd.cardsPerPlayer;
+      localState.gameStarted=true;
+      localState.gameOver=false;
 
-      // switch screens
-      waitingScreen.classList.remove('active');
-      setupScreen.classList.remove('active');
-      gameScreen.classList.add('active');
-      endScreen.classList.remove('active');
-
+      waitingScreen.classList.remove("active");
+      gameScreen.classList.add("active");
       updateGameUI();
     }
 
-    /* -----------------------------
-       UI rendering y sincronización
-       ----------------------------- */
-    function syncFromStorage(){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
-      // if game over
-      if (gd.gameOver) {
-        handleGameOver(gd); return;
+    /* --------- SYNC --------- */
+    function storageSync(e){
+      if(!e.key)return;
+      if(!localState.gameCode)return;
+      const key="mind_game_"+localState.gameCode;
+      if(e.key===key){
+        const raw=localStorage.getItem(key);
+        if(!raw){ m("Juego cancelado","error"); resetToSetup(); return; }
+        const gd=JSON.parse(raw);
+
+        if(gd.gameStarted && !localState.gameStarted){ startGame(); return; }
+        if(localState.gameStarted){ syncFromStore(); }
+        else updateWaiting();
       }
-      // update localState
-      localState.players = gd.players || [];
-      localState.playedCards = gd.playedCards || [];
+    }
+    function pollSync(){
+      if(!localState.gameCode)return;
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      if(localState.gameStarted)syncFromStore();
+    }
+    function syncFromStore(){
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      const gd=JSON.parse(raw);
+      if(gd.gameOver){ handleGameOver(gd); return; }
+      localState.players=gd.players;
+      localState.playedCards=gd.playedCards;
       updateGameUI();
     }
 
+    /* --------- GAME UI --------- */
     function updateGameUI(){
-      // top info
-      pcountEl && (pcountEl.textContent = localState.players.length);
-      playedCountEl && (playedCountEl.textContent = localState.playedCards.length);
-      totalCountEl && (totalCountEl.textContent = localState.totalCards);
+      pcountEl.textContent=localState.players.length;
+      playedCountEl.textContent=localState.playedCards.length;
+      totalCountEl.textContent=localState.totalCards;
 
-      // players list: show each player's cards (only numbers for local player)
-      playersContainer.innerHTML = '';
-      (localState.players || []).forEach(p => {
-        const pbox = document.createElement('div');
-        pbox.className = 'player';
-        // ensure waiting background color when in waiting stage previously requested
-        pbox.style.backgroundColor = 'rgba(255,255,255,0.06)';
+      playersContainer.innerHTML="";
+      localState.players.forEach(p=>{
+        const wrap=document.createElement("div");
+        wrap.className="player";
 
-        const name = document.createElement('div');
-        name.className = 'player-name';
-        name.textContent = (p.id === localState.playerId) ? (p.name + ' (Tú)') : p.name;
+        const nm=document.createElement("div");
+        nm.className="player-name";
+        nm.textContent=(p.id===localState.playerId ? p.name+" (Tú)" : p.name);
+        wrap.appendChild(nm);
 
-        const cardsWrap = document.createElement('div');
-        cardsWrap.className = 'player-cards';
+        const cards=document.createElement("div");
+        cards.className="player-cards";
 
-        if (p.cards && p.cards.length > 0) {
-          if (p.id === localState.playerId) {
-            // show real card values
-            p.cards.forEach(card => {
-              const cardEl = document.createElement('div');
-              cardEl.className = 'card';
-              cardEl.textContent = card;
-              cardEl.dataset.card = card;
-              // block click if card < last played
-              const last = localState.playedCards.length>0 ? localState.playedCards[localState.playedCards.length-1] : 0;
-              if (last > 0 && card < last) {
-                cardEl.classList.add('blocked');
-              } else {
-                cardEl.addEventListener('click', ()=> selectCard(card));
-              }
-              if (localState.selectedCard === card) cardEl.classList.add('selected');
-              cardsWrap.appendChild(cardEl);
+        if(p.cards){
+          if(p.id===localState.playerId){
+            p.cards.forEach(c=>{
+              const el=document.createElement("div");
+              el.className="card"; el.textContent=c; el.dataset.c=c;
+
+              const last=localState.playedCards.slice(-1)[0]||0;
+              if(c<last){ el.classList.add("blocked"); }
+              else el.onclick=()=>selectCard(c);
+
+              if(localState.selectedCard===c)el.classList.add("selected");
+              cards.appendChild(el);
             });
-          } else {
-            // other players: conceal cards
-            for (let i=0;i<p.cards.length;i++){
-              const hidden = document.createElement('div');
-              hidden.className = 'card';
-              hidden.textContent = '?';
-              hidden.style.backgroundColor = '#333';
-              hidden.style.color = 'white';
-              cardsWrap.appendChild(hidden);
-            }
+          }else{
+            p.cards.forEach(()=> {
+              const h=document.createElement("div");
+              h.className="card";
+              h.textContent="?";
+              h.style.background="#333";
+              h.style.color="white";
+              cards.appendChild(h);
+            });
           }
-        } else {
-          const empty = document.createElement('div');
-          empty.textContent = '---';
-          empty.style.color = '#ccc';
-          cardsWrap.appendChild(empty);
         }
-
-        pbox.appendChild(name);
-        pbox.appendChild(cardsWrap);
-        playersContainer.appendChild(pbox);
+        wrap.appendChild(cards);
+        playersContainer.appendChild(wrap);
       });
 
-      // played cards
-      playedCardsEl.innerHTML = '';
-      (localState.playedCards || []).forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card played';
-        el.textContent = c;
+      playedCardsEl.innerHTML="";
+      localState.playedCards.forEach(c=>{
+        const el=document.createElement("div");
+        el.className="card played";
+        el.textContent=c;
         playedCardsEl.appendChild(el);
       });
 
-      // enable/disable play button
-      playBtn && (playBtn.disabled = !localState.selectedCard);
+      playBtn.disabled=!localState.selectedCard;
     }
 
-    /* -----------------------------
-       Selección y jugar carta
-       ----------------------------- */
-    function selectCard(cardVal){
-      // ensure it's in our hand
-      const me = (localState.players||[]).find(p=>p.id===localState.playerId);
-      if (!me || !me.cards) return;
-      if (me.cards.indexOf(cardVal) === -1) return;
+    /* --------- PLAY CARD --------- */
+    function selectCard(c){
+      const me=localState.players.find(p=>p.id===localState.playerId);
+      if(!me || !me.cards.includes(c))return;
+      const last=localState.playedCards.slice(-1)[0]||0;
+      if(c<last)return m("No puedes jugar una menor","warning");
 
-      const last = localState.playedCards.length>0 ? localState.playedCards[localState.playedCards.length-1] : 0;
-      if (last > 0 && cardVal < last) {
-        showTempMessage('No puedes seleccionar una carta menor que la última jugada', 'warning');
-        return;
-      }
-
-      localState.selectedCard = cardVal;
+      localState.selectedCard=c;
       updateGameUI();
     }
 
     function playCard(){
-      if (!localState.selectedCard) return;
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
-      if (gd.gameOver) return;
+      if(!localState.selectedCard)return;
 
-      const played = localState.selectedCard;
-      const last = gd.playedCards && gd.playedCards.length>0 ? gd.playedCards[gd.playedCards.length-1] : 0;
-      if (last > 0 && played < last) {
-        showTempMessage('No puedes jugar una carta menor que la última jugada', 'error');
-        localState.selectedCard = null;
-        updateGameUI();
-        return;
-      }
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      const gd=JSON.parse(raw);
 
-      // remove card from our hand in storage
-      const myIdx = gd.players.findIndex(p=>p.id===localState.playerId);
-      if (myIdx === -1) { startFreshSync(); return; }
-      const idxCard = (gd.players[myIdx].cards||[]).indexOf(played);
-      if (idxCard === -1) { startFreshSync(); return; }
-      gd.players[myIdx].cards.splice(idxCard,1);
+      const played=localState.selectedCard;
+      const last=gd.playedCards.slice(-1)[0]||0;
+      if(played<last){ m("No puedes jugar una menor","error"); return; }
 
-      // add played card to pile
-      gd.playedCards = gd.playedCards || [];
+      const me=gd.players.find(p=>p.id===localState.playerId);
+      me.cards=me.cards.filter(x=>x!==played);
+
       gd.playedCards.push(played);
 
-      // CHECK: are there cards lower than 'played' in any other player's hand?
-      const lowerFound = [];
-      gd.players.forEach(p => {
-        if (p.id === localState.playerId) return;
-        if (!p.cards || p.cards.length === 0) return;
-        const lowers = p.cards.filter(c => c < played);
-        if (lowers && lowers.length > 0) {
-          // gather them and remove from that player's hand (they're revealed)
-          lowers.forEach(v => lowerFound.push({ playerId: p.id, value: v }));
-          p.cards = p.cards.filter(c => c >= played);
-        }
+      const lower=[];
+      gd.players.forEach(p=>{
+        if(p.id===localState.playerId)return;
+        const L=(p.cards||[]).filter(x=>x<played);
+        if(L.length){ lower.push(...L); p.cards=p.cards.filter(x=>x>=played); }
       });
 
-      if (lowerFound.length > 0) {
-        // Immediate defeat: reveal lower cards (add to played pile) and end game
-        const revealedValues = lowerFound.map(x => x.value).sort((a,b)=>a-b);
-        gd.playedCards.push(...revealedValues);
-        // mark game over as defeat
-        gd.gameOver = true;
-        gd.gameResult = { success:false, reason:'blocked', revealed: revealedValues, by: localState.playerId };
-
-        // save and notify
-        localStorage.setItem('mind_game_' + localState.gameCode, JSON.stringify(gd));
-        // update UI locally and end
-        handleGameOver(gd);
-        return;
-      } else {
-        // No lower cards: successful play. persist and sync.
-        localStorage.setItem('mind_game_' + localState.gameCode, JSON.stringify(gd));
-        // clear selection and sync state
-        localState.selectedCard = null;
-        syncFromStorage();
-        // check victory: if all cards gone -> win
-        checkVictoryCondition();
-      }
-    }
-
-    function checkVictoryCondition(){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
-      const allEmpty = gd.players.every(p => !p.cards || p.cards.length === 0);
-      if (allEmpty) {
-        // victory: mark game over success
-        gd.gameOver = true;
-        gd.gameResult = { success:true, reason:'victory' };
-        localStorage.setItem('mind_game_' + localState.gameCode, JSON.stringify(gd));
+      if(lower.length){
+        gd.playedCards.push(...lower.sort((a,b)=>a-b));
+        gd.gameOver=true;
+        gd.gameResult={success:false,reason:"blocked",revealed:lower,by:localState.playerId};
+        localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
         handleGameOver(gd);
         return;
       }
+
+      localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
+      localState.selectedCard=null;
+      syncFromStore();
+      checkVictory();
     }
 
-    /* -----------------------------
-       Fin de juego: inmediata (sin vidas)
-       ----------------------------- */
-    function endGameImmediate(success, reason){
-      const raw = localStorage.getItem('mind_game_' + localState.gameCode);
-      if (!raw) return;
-      const gd = JSON.parse(raw);
-      gd.gameOver = true;
-      gd.gameResult = { success: !!success, reason: reason || 'manual' };
-      localStorage.setItem('mind_game_' + localState.gameCode, JSON.stringify(gd));
+    function checkVictory(){
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
+      if(!raw)return;
+      const gd=JSON.parse(raw);
+      const done=gd.players.every(p=>!p.cards.length);
+
+      if(done){
+        gd.gameOver=true;
+        gd.gameResult={success:true,reason:"victory"};
+        localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
+        handleGameOver(gd);
+      }
+    }
+
+    /* --------- END --------- */
+    function endGameImmediate(succ,reason){
+      const raw=localStorage.getItem("mind_game_"+localState.gameCode); if(!raw)return;
+      const gd=JSON.parse(raw);
+      gd.gameOver=true;
+      gd.gameResult={success:!!succ,reason};
+      localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
       handleGameOver(gd);
     }
 
     function handleGameOver(gd){
-      localState.gameOver = true;
-      localState.gameStarted = false;
-      gameScreen.classList.remove('active');
-      endScreen.classList.add('active');
+      localState.gameOver=true;
+      gameScreen.classList.remove("active");
+      endScreen.classList.add("active");
 
-      if (gd.gameResult && gd.gameResult.success) {
-        endTitle.textContent = '¡VICTORIA!';
-        endDetails.innerHTML = '<p>Se han jugado todas las cartas con éxito.</p>';
-      } else {
-        // defeat: show who revealed and which were revealed (if present)
-        endTitle.textContent = '¡DERROTA!';
-        let details = '<p>Un jugador jugó una carta mayor y había cartas menores en manos de otros.</p>';
-        if (gd.gameResult && gd.gameResult.revealed && gd.gameResult.revealed.length>0) {
-          details += `<p>Cartas reveladas: <strong>${gd.gameResult.revealed.join(', ')}</strong></p>`;
-        }
-        endDetails.innerHTML = details;
+      if(gd.gameResult.success){
+        endTitle.textContent="¡VICTORIA!";
+        endDetails.innerHTML="Se han jugado todas las cartas.";
+      }else{
+        endTitle.textContent="¡DERROTA!";
+        if(gd.gameResult.revealed)
+          endDetails.innerHTML="Cartas menores reveladas: <b>"+gd.gameResult.revealed.join(", ")+"</b>";
+        else endDetails.textContent="Error en la partida.";
       }
     }
 
-    /* -----------------------------
-       Helpers y utilidades
-       ----------------------------- */
-    function startFreshSync(){
-      // in case of mismatch, reload ui from storage
-      syncFromStorage();
-    }
-
+    /* --------- HELPERS --------- */
     function cancelGame(){
-      if (!localState.gameCode) return resetToSetup();
-      if (localState.isHost) {
-        localStorage.removeItem('mind_game_' + localState.gameCode);
-      }
+      if(localState.isHost)
+        localStorage.removeItem("mind_game_"+localState.gameCode);
       resetToSetup();
     }
-
     function resetToSetup(){
-      localState.players = [];
-      localState.playedCards = [];
-      localState.gameCode = '';
-      localState.cardsPerPlayer = 3;
-      localState.totalCards = 0;
-      localState.gameStarted = false;
-      localState.gameOver = false;
-      localState.selectedCard = null;
-      localState.isHost = false;
+      localState={playerId:localState.playerId,players:[],playedCards:[],
+        gameCode:'',cardsPerPlayer:3,totalCards:0,
+        gameStarted:false,gameOver:false,selectedCard:null,isHost:false};
 
-      // switch screens
-      setupScreen.classList.add('active');
-      waitingScreen.classList.remove('active');
-      gameScreen.classList.remove('active');
-      endScreen.classList.remove('active');
-
-      // clear UI
-      waitingPlayersEl.innerHTML = '';
-      playersContainer.innerHTML = '';
-      playedCardsEl.innerHTML = '';
-      msgEl.style.display = 'none';
+      setupScreen.classList.add("active");
+      waitingScreen.classList.remove("active");
+      gameScreen.classList.remove("active");
+      endScreen.classList.remove("active");
     }
-
-    function showTempMessage(txt, type){
-      if (!msgEl) {
-        alert(txt);
-        return;
+    function m(text,type){
+      msgEl.textContent=text;
+      msgEl.className="message "+type;
+      msgEl.style.display="block";
+      setTimeout(()=>msgEl.style.display="none",2500);
+    }
+    const genCode=()=>Math.random().toString(36).substr(2,4).toUpperCase();
+    function shuffle(a){
+      for(let i=a.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
       }
-      msgEl.style.display = 'block';
-      msgEl.textContent = txt;
-      msgEl.className = 'message ' + (type === 'error' ? 'error' : (type === 'warning' ? 'warning' : 'success'));
-      setTimeout(()=> {
-        msgEl.style.display = 'none';
-      }, 3000);
     }
-
-    function generateCode(){
-      return Math.random().toString(36).substring(2,6).toUpperCase();
-    }
-
-    function shuffle(arr){
-      for (let i=arr.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    // Start the script
-    init();
-
-    // expose a few functions for debugging in console (optional)
-    window._tm_debug = {
-      localState: localState,
-      syncFromStorage: syncFromStorage,
-      resetToSetup: resetToSetup
-    };
   })();
 </script>
 
+</body>
+</html>
