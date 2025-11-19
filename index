@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>The Mind - Muerte Instantánea</title>
+  <title>The Mind</title>
 
   <style>
     *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;}
@@ -100,7 +100,7 @@
 
 <body>
 <div class="container">
-  <h1>The Mind — Muerte Instantánea</h1>
+  <h1>The Mind</h1>
 
   <!-- MENU INICIAL ORIGINAL -->
   <div class="setup-screen active">
