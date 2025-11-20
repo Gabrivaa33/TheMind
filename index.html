@@ -1,545 +1,690 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>The Mind</title>
-
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;}
-    body{
-      background:linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d);
-      min-height:100vh;color:white;padding:20px;
-    }
-    .container{
-      max-width:900px;margin:0 auto;
-      background:rgba(0,0,0,0.7);
-      padding:20px;border-radius:15px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.5);
-    }
-    h1{text-align:center;color:#fdbb2d;margin-bottom:20px;}
-
-    /* MENÚ INICIAL ORIGINAL */
-    .setup-screen{display:none;max-width:420px;margin:0 auto;padding:20px;}
-    .setup-screen.active{display:block;}
-    .setup-row{display:flex;flex-direction:column;margin-bottom:12px;gap:4px;}
-    .setup-input{padding:8px;border-radius:6px;border:none;outline:none;}
-    .setup-buttons{display:flex;justify-content:center;gap:12px;margin-top:10px;}
-    button.primary{
-      background:#fdbb2d;color:#1a2a6c;font-weight:bold;
-      padding:10px 18px;border:none;border-radius:6px;
-    }
-    button.secondary{
-      background:white;color:#1a2a6c;font-weight:bold;
-      padding:10px 18px;border:none;border-radius:6px;
-    }
-
-    /* WAITING */
-    .waiting-screen{display:none;}
-    .waiting-screen.active{display:block;}
-    .waiting-players{
-      display:flex;flex-wrap:wrap;gap:10px;
-      justify-content:center;margin:15px 0;
-    }
-    .waiting-player{
-      padding:10px;border-radius:10px;
-      min-width:140px;text-align:center;
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.1);
-    }
-
-    /* GAME */
-    .game-screen{display:none;}
-    .game-screen.active{display:block;}
-    .player-info{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
-    .player{
-      background:rgba(255,255,255,0.06);
-      border-radius:10px;padding:10px;
-      min-width:150px;text-align:center;
-    }
-    .player-name{font-weight:bold;margin-bottom:6px;}
-
-    .player-cards{
-      display:flex;justify-content:center;gap:6px;flex-wrap:wrap;
-    }
-    .card{
-      width:48px;height:68px;
-      background:white;color:#333;border-radius:6px;
-      display:flex;align-items:center;justify-content:center;
-      font-weight:bold;cursor:pointer;
-      transition:.15s;box-shadow:0 2px 6px rgba(0,0,0,0.4);
-    }
-    .card:hover{transform:translateY(-6px);}
-    .card.selected{transform:translateY(-10px);box-shadow:0 6px 18px rgba(253,187,45,0.7);}
-    .card.blocked{background:#ff4444;color:white;cursor:not-allowed;}
-    .card.played{background:#4CAF50;color:white;}
-
-    .played-cards{
-      display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
-      background:rgba(255,255,255,0.06);
-      padding:10px;border-radius:10px;margin-bottom:10px;
-    }
-
-    .controls{display:flex;gap:10px;justify-content:center;margin:12px 0;}
-    button{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;font-weight:bold;}
-    button:hover{opacity:0.9;}
-    button:disabled{background:#555;cursor:not-allowed;}
-
-    .message{
-      text-align:center;margin-top:8px;padding:10px;border-radius:6px;
-    }
-    .message.error{background:rgba(255,0,0,0.3);}
-    .message.warning{background:rgba(255,165,0,0.25);}
-    .message.success{background:rgba(0,200,0,0.25);}
-
-    /* END */
-    .end-screen{display:none;text-align:center;}
-    .end-screen.active{display:block;}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Mind — Online (Firebase)</title>
+<style>
+/* --- Estilos: mantiene tu UI original --- */
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif;}
+body{background:linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d);min-height:100vh;color:#fff;padding:20px;}
+.container{max-width:900px;margin:0 auto;background:rgba(0,0,0,0.7);padding:20px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+h1{text-align:center;color:#fdbb2d;margin-bottom:20px;}
+/* Setup original */
+.setup-screen{display:none;max-width:420px;margin:0 auto;padding:20px;}
+.setup-screen.active{display:block;}
+.setup-row{display:flex;flex-direction:column;margin-bottom:12px;gap:4px;}
+.setup-input{padding:8px;border-radius:6px;border:none;outline:none;}
+.setup-buttons{display:flex;justify-content:center;gap:12px;margin-top:10px;}
+button.primary{background:#fdbb2d;color:#1a2a6c;font-weight:bold;padding:10px 18px;border:none;border-radius:6px;}
+button.secondary{background:#fff;color:#1a2a6c;font-weight:bold;padding:10px 18px;border:none;border-radius:6px;}
+/* Waiting */
+.waiting-screen{display:none;}
+.waiting-screen.active{display:block;}
+.waiting-players{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:15px 0;}
+.waiting-player{padding:10px;border-radius:10px;min-width:140px;text-align:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);}
+/* Game */
+.game-screen{display:none;}
+.game-screen.active{display:block;}
+.player-info{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.player{background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;min-width:150px;text-align:center;}
+.player-name{font-weight:bold;margin-bottom:6px;}
+.player-cards{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;}
+.card{width:48px;height:68px;background:#fff;color:#333;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:bold;cursor:pointer;transition:.15s;box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+.card:hover{transform:translateY(-6px);}
+.card.selected{transform:translateY(-10px);box-shadow:0 6px 18px rgba(253,187,45,0.7);}
+.card.blocked{background:#ff4444;color:#fff;cursor:not-allowed;}
+.card.played{background:#4CAF50;color:#fff;}
+.played-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;background:rgba(255,255,255,0.06);padding:10px;border-radius:10px;margin-bottom:10px;}
+.controls{display:flex;gap:10px;justify-content:center;margin:12px 0;}
+button{padding:10px 18px;border-radius:6px;border:none;cursor:pointer;font-weight:bold;}
+button:disabled{background:#555;cursor:not-allowed;}
+.message{text-align:center;margin-top:8px;padding:10px;border-radius:6px;}
+.message.error{background:rgba(255,0,0,0.3);}
+.message.warning{background:rgba(255,165,0,0.25);}
+.message.success{background:rgba(0,200,0,0.25);}
+.end-screen{display:none;text-align:center;}
+.end-screen.active{display:block;}
+.small-muted{font-size:0.9rem;color:#ddd;margin-top:6px;}
+</style>
 </head>
-
 <body>
 <div class="container">
-  <h1>The Mind</h1>
+    <h1>The Mind — Online (Muerte instantánea)</h1>
 
-  <!-- MENU INICIAL ORIGINAL -->
-  <div class="setup-screen active">
-    <h2 style="text-align:center;margin-bottom:15px;">Crear o unirse a una partida</h2>
+    <!-- SETUP -->
+    <div class="setup-screen active">
+        <h2 style="text-align:center;margin-bottom:12px;">Crear o unirse a una partida</h2>
 
-    <div class="setup-row">
-      <label>Tu nombre:</label>
-      <input id="playerName" class="setup-input" value="Jugador">
+        <div class="setup-row">
+            <label>Tu nombre:</label>
+            <input id="playerName" class="setup-input" value="Jugador" />
+        </div>
+
+        <div class="setup-row">
+            <label>Nº jugadores:</label>
+            <select id="numPlayers" class="setup-input">
+                <option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option>
+            </select>
+        </div>
+
+        <div class="setup-row">
+            <label>Cartas por jugador:</label>
+            <select id="cardsPerPlayer" class="setup-input">
+                <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+            </select>
+        </div>
+
+        <div class="setup-row">
+            <label>Código (para unirse):</label>
+            <input id="gameCode" class="setup-input" placeholder="ABC1" />
+        </div>
+
+        <div class="setup-buttons">
+            <button id="createGame" class="primary">Crear Partida</button>
+            <button id="joinGame" class="secondary">Unirse</button>
+        </div>
+
+        <p class="small-muted" style="text-align:center;">(Se usa Firebase Realtime DB para jugar online — ver instrucciones al final)</p>
     </div>
 
-    <div class="setup-row">
-      <label>Nº jugadores:</label>
-      <select id="numPlayers" class="setup-input">
-        <option>2</option><option>3</option>
-        <option selected>4</option>
-        <option>5</option><option>6</option>
-      </select>
+    <!-- WAITING -->
+    <div class="waiting-screen">
+        <h2 style="text-align:center;margin-bottom:10px;">Esperando jugadores…</h2>
+        <h3 style="text-align:center;">Código: <span id="displayGameCode">----</span></h3>
+        <div id="waitingPlayers" class="waiting-players"></div>
+
+        <div class="controls">
+            <button id="startGame">Iniciar</button>
+            <button id="cancelGame">Cancelar</button>
+        </div>
     </div>
 
-    <div class="setup-row">
-      <label>Cartas por jugador:</label>
-      <select id="cardsPerPlayer" class="setup-input">
-        <option>1</option><option>2</option>
-        <option selected>3</option><option>4</option><option>5</option>
-      </select>
+    <!-- GAME -->
+    <div class="game-screen">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <div>Jugadores: <span id="pcount"></span></div>
+            <div>Jugadas: <span id="playedCount"></span>/<span id="totalCount"></span></div>
+        </div>
+
+        <div id="playersContainer" class="player-info"></div>
+
+        <h3 style="text-align:center;">Cartas jugadas</h3>
+        <div id="playedCards" class="played-cards"></div>
+
+        <div id="gameMessage" class="message" style="display:none;"></div>
+
+        <div class="controls">
+            <button id="playCard" disabled>Jugar</button>
+            <button id="endGame">Terminar</button>
+        </div>
     </div>
 
-    <div class="setup-row">
-      <label>Código (para unirse):</label>
-      <input id="gameCode" class="setup-input" placeholder="ABC1">
+    <!-- END -->
+    <div class="end-screen">
+        <h2 id="endTitle"></h2>
+        <p id="endDetails"></p>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:12px;">
+            <button id="playAgain" class="primary">Volver al menú</button>
+        </div>
     </div>
-
-    <div class="setup-buttons">
-      <button id="createGame" class="primary">Crear Partida</button>
-      <button id="joinGame" class="secondary">Unirse</button>
-    </div>
-  </div>
-
-  <!-- WAITING -->
-  <div class="waiting-screen">
-    <h2 style="text-align:center;margin-bottom:10px;">Esperando jugadores…</h2>
-    <h3 style="text-align:center;">Código: <span id="displayGameCode">----</span></h3>
-    <div id="waitingPlayers" class="waiting-players"></div>
-
-    <div class="controls">
-      <button id="startGame">Iniciar</button>
-      <button id="cancelGame">Cancelar</button>
-    </div>
-  </div>
-
-  <!-- GAME -->
-  <div class="game-screen">
-    <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-      <div>Jugadores: <span id="pcount"></span></div>
-      <div>Jugadas: <span id="playedCount"></span>/<span id="totalCount"></span></div>
-    </div>
-
-    <div id="playersContainer" class="player-info"></div>
-
-    <h3 style="text-align:center;">Cartas jugadas</h3>
-    <div id="playedCards" class="played-cards"></div>
-
-    <div id="gameMessage" class="message" style="display:none;"></div>
-
-    <div class="controls">
-      <button id="playCard" disabled>Jugar</button>
-      <button id="endGame">Terminar</button>
-    </div>
-  </div>
-
-  <!-- END -->
-  <div class="end-screen">
-    <h2 id="endTitle"></h2>
-    <p id="endDetails"></p>
-    <button id="playAgain">Volver</button>
-  </div>
-
 </div>
 
-<!-- ======================================================
-     ===============  SCRIPT COMPLETO  =====================
-     ======================================================-->
+<!-- Firebase SDKs (compat simple: v8) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
-  (function(){
-    let localState={
-      playerId:null,players:[],playedCards:[],
-      gameCode:'',cardsPerPlayer:3,totalCards:0,
-      gameStarted:false,gameOver:false,selectedCard:null,isHost:false
+/*
+  INSTRUCCIONES: crea un proyecto Firebase y pega su configuración en firebaseConfig.
+  Ejemplo (NO uses estas keys; reemplázalas por las tuyas):
+*/
+const firebaseConfig = {
+  // >>> PON AQUÍ TU CONFIG FIREBASE (apiKey, authDomain, databaseURL, projectId, etc.) <<<
+  // apiKey: "AIza....",
+  // authDomain: "tu-proy.firebaseapp.com",
+  // databaseURL: "https://tu-proy.firebaseio.com",
+  // projectId: "tu-proy",
+  // storageBucket: "...",
+  // messagingSenderId: "...",
+  // appId: "1:...:web:..."
+};
+
+if (!firebaseConfig.apiKey) {
+  console.warn("Pega tu configuración de Firebase en firebaseConfig para usar modo online.");
+  // El script sigue, pero sin conexión Firebase no habrá sincronización entre dispositivos.
+}
+
+/* Inicializar Firebase si hay config */
+try{
+  if (firebaseConfig && firebaseConfig.apiKey) {
+    firebase.initializeApp(firebaseConfig);
+    var DB = firebase.database();
+  } else {
+    var DB = null;
+  }
+}catch(e){
+  console.error("Error iniciando Firebase:",e);
+  var DB = null;
+}
+
+/* ===============================
+   LÓGICA DEL JUEGO (similar a la anterior)
+   ahora usando Firebase Realtime Database en lugar de localStorage.
+   Si DB === null vuelve a modo local (solo pestañas mismo equipo) usando sessionStorage.
+   =============================== */
+
+(function(){
+  // Estado local
+  let localState = {
+    playerId: null,
+    players: [],
+    playedCards: [],
+    gameCode: '',
+    cardsPerPlayer: 3,
+    totalCards: 0,
+    gameStarted: false,
+    gameOver: false,
+    selectedCard: null,
+    isHost: false
+  };
+
+  // DOM refs
+  const $ = id => document.getElementById(id);
+  const createBtn = $('createGame'), joinBtn = $('joinGame'),
+        startBtn = $('startGame'), cancelBtn = $('cancelGame'),
+        playBtn = $('playCard'), endBtn = $('endGame'),
+        playAgainBtn = $('playAgain'),
+        waitingPlayersEl = $('waitingPlayers'), playersContainer = $('playersContainer'),
+        playedCardsEl = $('playedCards'), msgEl = $('gameMessage'),
+        pcountEl = $('pcount'), playedCountEl = $('playedCount'),
+        totalCountEl = $('totalCount'), displayGameCodeEl = $('displayGameCode'),
+        setupScreen = document.querySelector('.setup-screen'),
+        waitingScreen = document.querySelector('.waiting-screen'),
+        gameScreen = document.querySelector('.game-screen'),
+        endScreen = document.querySelector('.end-screen'),
+        endTitle = $('endTitle'), endDetails = $('endDetails');
+
+  // Util: reference in DB
+  function gameRef(code){ return DB ? DB.ref('mind_game/' + code) : null; }
+
+  // Init
+  function init(){
+    // player id persistente en sesión
+    let pid = sessionStorage.getItem('tm_player_id');
+    if(!pid){ pid = 'p_' + Math.random().toString(36).substr(2,9); sessionStorage.setItem('tm_player_id', pid); }
+    localState.playerId = pid;
+
+    // binder
+    createBtn.onclick = createGame;
+    joinBtn.onclick = joinGame;
+    startBtn.onclick = startGameFromWaiting;
+    cancelBtn.onclick = cancelGame;
+    playBtn.onclick = playCard;
+    endBtn.onclick = () => endGameImmediate(false, 'manual');
+    playAgainBtn.onclick = resetToSetup;
+
+    // si DB está disponible, escuchar cambios globales con listener si estamos en una partida
+    window.addEventListener('beforeunload', ()=> {
+      // opcional: marcar desconexión (no necesario para lógica básica)
+    });
+
+    // fallback poll para actualizar UI cada 1s (útil si no llegan eventos)
+    setInterval(()=> {
+      if(!localState.gameCode) return;
+      if(DB) { /* db listener se encarga */ }
+      else { // fallback: sessionStorage (solo entre pestañas)
+        const raw = sessionStorage.getItem('mind_game_' + localState.gameCode);
+        if(raw) { const gd = JSON.parse(raw); localState.players = gd.players || []; localState.playedCards = gd.playedCards || []; updateGameUI(); }
+      }
+    }, 1000);
+  }
+
+  /* ========== CREAR / UNIR ========== */
+  function createGame(){
+    const name = $('playerName').value || 'Jugador';
+    const maxPlayers = parseInt($('numPlayers').value || 4, 10);
+    const cardsPer = parseInt($('cardsPerPlayer').value || 3, 10);
+    const codeInput = ($('gameCode').value || '').toUpperCase().trim();
+    const code = codeInput || genCode();
+
+    localState.gameCode = code;
+    localState.cardsPerPlayer = cardsPer;
+    localState.isHost = true;
+
+    const gameData = {
+      code: code,
+      host: localState.playerId,
+      maxPlayers: maxPlayers,
+      cardsPerPlayer: cardsPer,
+      players: [{ id: localState.playerId, name: name, joined: true }],
+      gameStarted: false,
+      playedCards: [],
+      deck: [],
+      gameOver: false
     };
 
-    function $(id){return document.getElementById(id);}
-
-    const createBtn=$("createGame"),joinBtn=$("joinGame"),
-      startBtn=$("startGame"),cancelBtn=$("cancelGame"),
-      playBtn=$("playCard"),endBtn=$("endGame"),playAgainBtn=$("playAgain"),
-      waitingPlayersEl=$("waitingPlayers"),playersContainer=$("playersContainer"),
-      playedCardsEl=$("playedCards"),msgEl=$("gameMessage"),
-      pcountEl=$("pcount"),playedCountEl=$("playedCount"),
-      totalCountEl=$("totalCount"),displayGameCodeEl=$("displayGameCode");
-
-    const setupScreen=document.querySelector(".setup-screen"),
-      waitingScreen=document.querySelector(".waiting-screen"),
-      gameScreen=document.querySelector(".game-screen"),
-      endScreen=document.querySelector(".end-screen"),
-      endTitle=$("endTitle"),endDetails=$("endDetails");
-
-    /* INITIALIZE */
-    (function init(){
-      let pid=sessionStorage.getItem("tm_player_id");
-      if(!pid){pid="p_"+Math.random().toString(36).substr(2,9);sessionStorage.setItem("tm_player_id",pid);}
-      localState.playerId=pid;
-
-      createBtn.onclick=createGame;
-      joinBtn.onclick=joinGame;
-      startBtn.onclick=startGameFromWaiting;
-      cancelBtn.onclick=cancelGame;
-      playBtn.onclick=playCard;
-      endBtn.onclick=()=>endGameImmediate(false,"manual");
-      playAgainBtn.onclick=resetToSetup;
-
-      window.addEventListener("storage",storageSync);
-      setInterval(pollSync,1000);
-    })();
-
-    /* --------- CREATE / JOIN --------- */
-    function createGame(){
-      const name=$("playerName").value||"Jugador";
-      const maxPlayers=parseInt($("numPlayers").value);
-      const cards=parseInt($("cardsPerPlayer").value);
-      const codeInput=$("gameCode").value;
-      const code=(codeInput?codeInput.toUpperCase():genCode());
-
-      localState.isHost=true;
-      localState.gameCode=code;
-      localState.cardsPerPlayer=cards;
-
-      const gd={
-        code,host:localState.playerId,maxPlayers,cardsPerPlayer:cards,
-        players:[{id:localState.playerId,name,joined:true}],
-        gameStarted:false,playedCards:[],deck:[],gameOver:false
-      };
-      localStorage.setItem("mind_game_"+code,JSON.stringify(gd));
-      showWaiting();
+    if(DB){
+      gameRef(code).set(gameData).then(()=> showWaitingScreen()).catch(err=> m('Error Firebase: '+err.message,'error'));
+    } else {
+      // fallback local (sessionStorage)
+      sessionStorage.setItem('mind_game_' + code, JSON.stringify(gameData));
+      showWaitingScreen();
     }
+  }
 
-    function joinGame(){
-      const name=$("playerName").value||"Jugador";
-      const code=($("gameCode").value||"").toUpperCase();
-      if(!code)return m("Introduce un código","error");
+  function joinGame(){
+    const name = $('playerName').value || 'Jugador';
+    const codeInput = ($('gameCode').value || '').toUpperCase().trim();
+    if(!codeInput) { m('Introduce un código de juego','error'); return; }
+    const code = codeInput;
+    localState.gameCode = code;
 
-      let raw=localStorage.getItem("mind_game_"+code);
-      if(!raw)return m("Juego no encontrado","error");
+    if(DB){
+      gameRef(code).once('value').then(snap => {
+        const gd = snap.val();
+        if(!gd){ m('No se encontró juego con ese código','error'); return; }
+        if(gd.gameStarted){ m('El juego ya ha comenzado','error'); return; }
+        if(gd.players && gd.players.length >= gd.maxPlayers){ m('Juego lleno','error'); return; }
 
-      let gd=JSON.parse(raw);
-      if(gd.gameStarted)return m("El juego ya comenzó","error");
-      if(gd.players.length>=gd.maxPlayers)return m("Partida llena","error");
-
-      gd.players.push({id:localState.playerId,name,joined:true});
-      localStorage.setItem("mind_game_"+code,JSON.stringify(gd));
-
-      localState.isHost=false;
-      localState.gameCode=code;
-      localState.cardsPerPlayer=gd.cardsPerPlayer;
-      showWaiting();
+        gd.players = gd.players || [];
+        gd.players.push({ id: localState.playerId, name: name, joined: true });
+        gameRef(code).set(gd).then(()=> {
+          localState.cardsPerPlayer = gd.cardsPerPlayer;
+          localState.isHost = false;
+          showWaitingScreen();
+        }).catch(err => m('Error Firebase: '+err.message,'error'));
+      }).catch(err => m('Error Firebase: '+err.message,'error'));
+    } else {
+      const raw = sessionStorage.getItem('mind_game_' + code);
+      if(!raw){ m('No se encontró juego con ese código','error'); return; }
+      const gd = JSON.parse(raw);
+      if(gd.gameStarted){ m('El juego ya ha comenzado','error'); return; }
+      if(gd.players && gd.players.length >= gd.maxPlayers){ m('Juego lleno','error'); return; }
+      gd.players.push({ id: localState.playerId, name: name, joined: true });
+      sessionStorage.setItem('mind_game_' + code, JSON.stringify(gd));
+      localState.cardsPerPlayer = gd.cardsPerPlayer;
+      localState.isHost = false;
+      showWaitingScreen();
     }
+  }
 
-    function showWaiting(){
-      setupScreen.classList.remove("active");
-      waitingScreen.classList.add("active");
-      updateWaiting();
+  function showWaitingScreen(){
+    setupScreen.classList.remove('active');
+    waitingScreen.classList.add('active');
+    displayGameCodeEl.textContent = localState.gameCode;
+    updateWaitingPlayers();
+
+    // si DB: añadir listener para esta partida
+    attachGameListener();
+  }
+
+  function updateWaitingPlayers(){
+    if(DB){
+      gameRef(localState.gameCode).once('value').then(snap=>{
+        const gd = snap.val();
+        if(!gd) return;
+        renderWaiting(gd);
+      }).catch(err=>{ /* ignore */ });
+    } else {
+      const raw = sessionStorage.getItem('mind_game_' + localState.gameCode);
+      if(!raw) return;
+      const gd = JSON.parse(raw);
+      renderWaiting(gd);
     }
+  }
 
-    function updateWaiting(){
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      const gd=JSON.parse(raw);
-
-      waitingPlayersEl.innerHTML="";
-      for(let i=0;i<gd.maxPlayers;i++){
-        const el=document.createElement("div");
-        el.className="waiting-player";
-        if(i<gd.players.length){
-          el.textContent=gd.players[i].name;
-          el.style.background="rgba(253,187,45,0.12)";
-          el.style.border="1px solid rgba(253,187,45,0.25)";
-        }else{
-          el.textContent="Esperando…";
-        }
-        waitingPlayersEl.appendChild(el);
+  function renderWaiting(gd){
+    waitingPlayersEl.innerHTML = '';
+    for(let i=0;i<gd.maxPlayers;i++){
+      const slot = document.createElement('div');
+      slot.className = 'waiting-player';
+      if(i < (gd.players||[]).length){
+        slot.textContent = (gd.players[i] && gd.players[i].name) ? gd.players[i].name : 'Jugador';
+        slot.style.background = 'rgba(253,187,45,0.12)';
+        slot.style.border = '1px solid rgba(253,187,45,0.25)';
+      } else {
+        slot.textContent = 'Esperando...';
       }
-      displayGameCodeEl.textContent=gd.code;
+      waitingPlayersEl.appendChild(slot);
     }
+    pcountEl.textContent = (gd.players||[]).length;
+    totalCountEl.textContent = gd.maxPlayers;
+    displayGameCodeEl.textContent = gd.code;
+  }
 
-    /* --------- START GAME --------- */
-    function startGameFromWaiting(){
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      const gd=JSON.parse(raw);
+  /* ========== START GAME ========== */
+  function startGameFromWaiting(){
+    // Host triggers deal and sets gameStarted true
+    if(DB){
+      gameRef(localState.gameCode).once('value').then(snap=>{
+        const gd = snap.val();
+        if(!gd) { m('Partida no encontrada','error'); return; }
+        if(gd.players.length < 2){ m('Se necesitan al menos 2 jugadores','error'); return; }
 
-      if(gd.players.length<2)return m("Mínimo 2 jugadores","error");
-
-      const deck=[...Array(100).keys()].map(n=>n+1);
+        // crear deck y repartir
+        const deck = Array.from({length:100}, (_,i)=>i+1);
+        shuffle(deck);
+        gd.playedCards = [];
+        gd.gameStarted = true;
+        gd.gameOver = false;
+        gd.players.forEach(p => p.cards = deck.splice(0, gd.cardsPerPlayer).sort((a,b)=>a-b));
+        gd.deck = deck;
+        gameRef(localState.gameCode).set(gd).then(()=> {
+          // nada más; listener se encargará de arrancar en todos los clientes
+        }).catch(err=>m('Error Firebase: '+err.message,'error'));
+      }).catch(err=>m('Error Firebase: '+err.message,'error'));
+    } else {
+      const raw = sessionStorage.getItem('mind_game_' + localState.gameCode);
+      if(!raw) return;
+      const gd = JSON.parse(raw);
+      if(gd.players.length < 2){ m('Se necesitan al menos 2 jugadores','error'); return; }
+      const deck = Array.from({length:100}, (_,i)=>i+1);
       shuffle(deck);
-      gd.gameStarted=true;
-      gd.playedCards=[];
-      gd.players.forEach(p=>{
-        p.cards=deck.splice(0,gd.cardsPerPlayer).sort((a,b)=>a-b);
-      });
-      gd.deck=deck;
-
-      localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
-      startGame();
+      gd.playedCards = [];
+      gd.gameStarted = true;
+      gd.gameOver = false;
+      gd.players.forEach(p => p.cards = deck.splice(0, gd.cardsPerPlayer).sort((a,b)=>a-b));
+      gd.deck = deck;
+      sessionStorage.setItem('mind_game_' + localState.gameCode, JSON.stringify(gd));
+      // arrancar local
+      attachGameListener();
     }
+  }
 
-    function startGame(){
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      const gd=JSON.parse(raw);
-
-      localState.players=gd.players;
-      localState.playedCards=gd.playedCards;
-      localState.totalCards=gd.players.length*gd.cardsPerPlayer;
-      localState.gameStarted=true;
-      localState.gameOver=false;
-
-      waitingScreen.classList.remove("active");
-      gameScreen.classList.add("active");
-      updateGameUI();
-    }
-
-    /* --------- SYNC --------- */
-    function storageSync(e){
-      if(!e.key)return;
-      if(!localState.gameCode)return;
-      const key="mind_game_"+localState.gameCode;
-      if(e.key===key){
-        const raw=localStorage.getItem(key);
-        if(!raw){ m("Juego cancelado","error"); resetToSetup(); return; }
-        const gd=JSON.parse(raw);
-
-        if(gd.gameStarted && !localState.gameStarted){ startGame(); return; }
-        if(localState.gameStarted){ syncFromStore(); }
-        else updateWaiting();
-      }
-    }
-    function pollSync(){
-      if(!localState.gameCode)return;
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      if(localState.gameStarted)syncFromStore();
-    }
-    function syncFromStore(){
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      const gd=JSON.parse(raw);
-      if(gd.gameOver){ handleGameOver(gd); return; }
-      localState.players=gd.players;
-      localState.playedCards=gd.playedCards;
-      updateGameUI();
-    }
-
-    /* --------- GAME UI --------- */
-    function updateGameUI(){
-      pcountEl.textContent=localState.players.length;
-      playedCountEl.textContent=localState.playedCards.length;
-      totalCountEl.textContent=localState.totalCards;
-
-      playersContainer.innerHTML="";
-      localState.players.forEach(p=>{
-        const wrap=document.createElement("div");
-        wrap.className="player";
-
-        const nm=document.createElement("div");
-        nm.className="player-name";
-        nm.textContent=(p.id===localState.playerId ? p.name+" (Tú)" : p.name);
-        wrap.appendChild(nm);
-
-        const cards=document.createElement("div");
-        cards.className="player-cards";
-
-        if(p.cards){
-          if(p.id===localState.playerId){
-            p.cards.forEach(c=>{
-              const el=document.createElement("div");
-              el.className="card"; el.textContent=c; el.dataset.c=c;
-
-              const last=localState.playedCards.slice(-1)[0]||0;
-              if(c<last){ el.classList.add("blocked"); }
-              else el.onclick=()=>selectCard(c);
-
-              if(localState.selectedCard===c)el.classList.add("selected");
-              cards.appendChild(el);
-            });
-          }else{
-            p.cards.forEach(()=> {
-              const h=document.createElement("div");
-              h.className="card";
-              h.textContent="?";
-              h.style.background="#333";
-              h.style.color="white";
-              cards.appendChild(h);
-            });
-          }
+  /* ========== ATTACH LISTENER ========== */
+  let firebaseListener = null;
+  function attachGameListener(){
+    if(DB){
+      const ref = gameRef(localState.gameCode);
+      if(firebaseListener) firebaseListener.off(); // safe
+      firebaseListener = ref;
+      ref.on('value', snap => {
+        const gd = snap.val();
+        if(!gd){
+          m('La partida fue cancelada','error');
+          resetToSetup();
+          return;
         }
-        wrap.appendChild(cards);
-        playersContainer.appendChild(wrap);
+        // si se inició y yo aún no, arranco
+        if(gd.gameStarted && !localState.gameStarted){
+          // sincronizo localState
+          localState.players = gd.players || [];
+          localState.playedCards = gd.playedCards || [];
+          localState.cardsPerPlayer = gd.cardsPerPlayer;
+          localState.totalCards = (gd.players||[]).length * (gd.cardsPerPlayer||0);
+          localState.gameStarted = true;
+          localState.gameOver = false;
+          waitingScreen.classList.remove('active');
+          gameScreen.classList.add('active');
+        } else if(gd.gameOver){
+          handleGameOver(gd);
+          return;
+        } else {
+          // update waiting UI
+          renderWaiting(gd);
+        }
+        // actualizar estado y UI
+        localState.players = gd.players || [];
+        localState.playedCards = gd.playedCards || [];
+        updateGameUI();
       });
-
-      playedCardsEl.innerHTML="";
-      localState.playedCards.forEach(c=>{
-        const el=document.createElement("div");
-        el.className="card played";
-        el.textContent=c;
-        playedCardsEl.appendChild(el);
-      });
-
-      playBtn.disabled=!localState.selectedCard;
+    } else {
+      // fallback: nothing to attach, but we can render waiting from sessionStorage
+      updateWaitingPlayers();
     }
+  }
 
-    /* --------- PLAY CARD --------- */
-    function selectCard(c){
-      const me=localState.players.find(p=>p.id===localState.playerId);
-      if(!me || !me.cards.includes(c))return;
-      const last=localState.playedCards.slice(-1)[0]||0;
-      if(c<last)return m("No puedes jugar una menor","warning");
+  /* ========== GAMEPLAY UI ========== */
+  function updateGameUI(){
+    pcountEl.textContent = (localState.players || []).length;
+    playedCountEl.textContent = (localState.playedCards || []).length;
+    totalCountEl.textContent = localState.totalCards || ((localState.players||[]).length * (localState.cardsPerPlayer||0));
 
-      localState.selectedCard=c;
-      updateGameUI();
-    }
+    playersContainer.innerHTML = '';
+    (localState.players || []).forEach(p => {
+      const box = document.createElement('div'); box.className='player';
+      const nm = document.createElement('div'); nm.className='player-name'; nm.textContent = p.id===localState.playerId ? (p.name + ' (Tú)') : p.name;
+      box.appendChild(nm);
+      const cw = document.createElement('div'); cw.className='player-cards';
+      if(p.cards && p.cards.length>0){
+        if(p.id === localState.playerId){
+          p.cards.forEach(c => {
+            const el = document.createElement('div'); el.className='card'; el.textContent = c; el.dataset.c=c;
+            const last = (localState.playedCards || []).slice(-1)[0] || 0;
+            if(last > 0 && c < last) el.classList.add('blocked');
+            else el.onclick = ()=> selectCard(c);
+            if(localState.selectedCard === c) el.classList.add('selected');
+            cw.appendChild(el);
+          });
+        } else {
+          p.cards.forEach(()=> {
+            const el = document.createElement('div'); el.className='card'; el.textContent='?'; el.style.background='#333'; el.style.color='#fff'; cw.appendChild(el);
+          });
+        }
+      } else {
+        const none = document.createElement('div'); none.textContent='---'; none.style.color='#ccc'; cw.appendChild(none);
+      }
+      box.appendChild(cw);
+      playersContainer.appendChild(box);
+    });
 
-    function playCard(){
-      if(!localState.selectedCard)return;
+    playedCardsEl.innerHTML = '';
+    (localState.playedCards || []).forEach(c => {
+      const el = document.createElement('div'); el.className='card played'; el.textContent = c; playedCardsEl.appendChild(el);
+    });
 
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      const gd=JSON.parse(raw);
+    playBtn.disabled = !localState.selectedCard;
+  }
 
-      const played=localState.selectedCard;
-      const last=gd.playedCards.slice(-1)[0]||0;
-      if(played<last){ m("No puedes jugar una menor","error"); return; }
+  /* ========== SELECT / PLAY ========== */
+  function selectCard(val){
+    const me = (localState.players||[]).find(p => p.id === localState.playerId);
+    if(!me || !me.cards || me.cards.indexOf(val) === -1) return;
+    const last = (localState.playedCards || []).slice(-1)[0] || 0;
+    if(last > 0 && val < last){ m('No puedes seleccionar una carta menor que la última jugada','warning'); return; }
+    localState.selectedCard = val;
+    updateGameUI();
+  }
 
-      const me=gd.players.find(p=>p.id===localState.playerId);
-      me.cards=me.cards.filter(x=>x!==played);
-
-      gd.playedCards.push(played);
-
-      const lower=[];
-      gd.players.forEach(p=>{
-        if(p.id===localState.playerId)return;
-        const L=(p.cards||[]).filter(x=>x<played);
-        if(L.length){ lower.push(...L); p.cards=p.cards.filter(x=>x>=played); }
+  function playCard(){
+    if(!localState.selectedCard) return;
+    const code = localState.gameCode;
+    if(DB){
+      // leer estado actual, aplicar cambios con transacción ligera
+      const ref = gameRef(code);
+      ref.transaction(gd => {
+        if(!gd) return; // abort
+        if(gd.gameOver) return gd;
+        // remove card from my hand
+        gd.players = gd.players || [];
+        const meIdx = gd.players.findIndex(p => p.id === localState.playerId);
+        if(meIdx === -1) return gd;
+        if(!gd.players[meIdx].cards) gd.players[meIdx].cards = [];
+        const idx = gd.players[meIdx].cards.indexOf(localState.selectedCard);
+        if(idx === -1) return gd;
+        gd.players[meIdx].cards.splice(idx,1);
+        gd.playedCards = gd.playedCards || [];
+        gd.playedCards.push(localState.selectedCard);
+        // check others for lower cards
+        let lower = [];
+        gd.players.forEach(p => {
+          if(p.id === localState.playerId) return;
+          if(!p.cards) return;
+          const L = p.cards.filter(c => c < localState.selectedCard);
+          if(L.length){ lower.push(...L); p.cards = p.cards.filter(c => c >= localState.selectedCard); }
+        });
+        if(lower.length){
+          // revealed -> immediate defeat
+          gd.playedCards.push(...lower.sort((a,b)=>a-b));
+          gd.gameOver = true;
+          gd.gameResult = { success:false, reason:'blocked', revealed: lower.sort((a,b)=>a-b), by: localState.playerId };
+        }
+        return gd;
+      }, (err, committed, snapshot) => {
+        if(err) return m('Error Firebase: '+err.message,'error');
+        if(!committed) return m('Conflicto al jugar carta, inténtalo de nuevo','warning');
+        const gd = snapshot.val();
+        // after transaction, clear selection locally; UI will update via listener
+        localState.selectedCard = null;
+        // if gameOver set by transaction, listener will call handleGameOver
+        // otherwise check victory client-side (in case last card removed)
+        if(gd && !gd.gameOver) checkVictoryFirebase(code);
       });
-
+    } else {
+      // fallback sessionStorage (pestañas locales)
+      const raw = sessionStorage.getItem('mind_game_' + code);
+      if(!raw) return;
+      const gd = JSON.parse(raw);
+      // similar logic
+      const me = gd.players.find(p => p.id === localState.playerId);
+      if(!me || !me.cards) return;
+      const idx = me.cards.indexOf(localState.selectedCard);
+      if(idx === -1) return;
+      me.cards.splice(idx,1);
+      gd.playedCards = gd.playedCards || [];
+      gd.playedCards.push(localState.selectedCard);
+      const lower = [];
+      gd.players.forEach(p => {
+        if(p.id === localState.playerId) return;
+        const L = (p.cards||[]).filter(c => c < localState.selectedCard);
+        if(L.length){ lower.push(...L); p.cards = p.cards.filter(c => c >= localState.selectedCard); }
+      });
       if(lower.length){
         gd.playedCards.push(...lower.sort((a,b)=>a-b));
-        gd.gameOver=true;
-        gd.gameResult={success:false,reason:"blocked",revealed:lower,by:localState.playerId};
-        localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
+        gd.gameOver = true;
+        gd.gameResult = { success:false, reason:'blocked', revealed: lower.sort((a,b)=>a-b), by: localState.playerId };
+        sessionStorage.setItem('mind_game_'+code, JSON.stringify(gd));
         handleGameOver(gd);
         return;
       }
-
-      localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
-      localState.selectedCard=null;
-      syncFromStore();
-      checkVictory();
+      sessionStorage.setItem('mind_game_'+code, JSON.stringify(gd));
+      localState.selectedCard = null;
+      // update UI
+      localState.players = gd.players; localState.playedCards = gd.playedCards;
+      updateGameUI();
+      checkVictoryLocal(code);
     }
+  }
 
-    function checkVictory(){
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode);
-      if(!raw)return;
-      const gd=JSON.parse(raw);
-      const done=gd.players.every(p=>!p.cards.length);
-
-      if(done){
-        gd.gameOver=true;
-        gd.gameResult={success:true,reason:"victory"};
-        localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
-        handleGameOver(gd);
+  /* ========== CHECK VICTORY ========== */
+  function checkVictoryFirebase(code){
+    // read snapshot once to verify all hands empty
+    gameRef(code).once('value').then(snap => {
+      const gd = snap.val();
+      if(!gd) return;
+      const allEmpty = (gd.players || []).every(p => !p.cards || p.cards.length === 0);
+      if(allEmpty){
+        gd.gameOver = true;
+        gd.gameResult = { success:true, reason:'victory' };
+        gameRef(code).set(gd);
       }
-    }
-
-    /* --------- END --------- */
-    function endGameImmediate(succ,reason){
-      const raw=localStorage.getItem("mind_game_"+localState.gameCode); if(!raw)return;
-      const gd=JSON.parse(raw);
-      gd.gameOver=true;
-      gd.gameResult={success:!!succ,reason};
-      localStorage.setItem("mind_game_"+localState.gameCode,JSON.stringify(gd));
+    }).catch(err=>{/*ignore*/});
+  }
+  function checkVictoryLocal(code){
+    const raw = sessionStorage.getItem('mind_game_' + code);
+    if(!raw) return;
+    const gd = JSON.parse(raw);
+    const allEmpty = (gd.players ||[]).every(p => !p.cards || p.cards.length === 0);
+    if(allEmpty){
+      gd.gameOver = true;
+      gd.gameResult = { success:true, reason:'victory' };
+      sessionStorage.setItem('mind_game_' + code, JSON.stringify(gd));
       handleGameOver(gd);
     }
+  }
 
-    function handleGameOver(gd){
-      localState.gameOver=true;
-      gameScreen.classList.remove("active");
-      endScreen.classList.add("active");
-
-      if(gd.gameResult.success){
-        endTitle.textContent="¡VICTORIA!";
-        endDetails.innerHTML="Se han jugado todas las cartas.";
-      }else{
-        endTitle.textContent="¡DERROTA!";
-        if(gd.gameResult.revealed)
-          endDetails.innerHTML="Cartas menores reveladas: <b>"+gd.gameResult.revealed.join(", ")+"</b>";
-        else endDetails.textContent="Error en la partida.";
-      }
+  /* ========== GAME OVER HANDLER ========== */
+  function endGameImmediate(success, reason){
+    const code = localState.gameCode;
+    if(!code) return;
+    if(DB){
+      gameRef(code).once('value').then(snap => {
+        const gd = snap.val();
+        if(!gd) return;
+        gd.gameOver = true;
+        gd.gameResult = { success: !!success, reason: reason || 'manual' };
+        gameRef(code).set(gd);
+      }).catch(err => m('Error Firebase: '+err.message,'error'));
+    } else {
+      const raw = sessionStorage.getItem('mind_game_' + code);
+      if(!raw) return;
+      const gd = JSON.parse(raw);
+      gd.gameOver = true;
+      gd.gameResult = { success: !!success, reason: reason || 'manual' };
+      sessionStorage.setItem('mind_game_'+code, JSON.stringify(gd));
+      handleGameOver(gd);
     }
+  }
 
-    /* --------- HELPERS --------- */
-    function cancelGame(){
-      if(localState.isHost)
-        localStorage.removeItem("mind_game_"+localState.gameCode);
+  function handleGameOver(gd){
+    localState.gameOver = true;
+    localState.gameStarted = false;
+    gameScreen.classList.remove('active');
+    endScreen.classList.add('active');
+    if(gd.gameResult && gd.gameResult.success){
+      endTitle.textContent = '¡VICTORIA!';
+      endDetails.innerHTML = '<p>Se han jugado todas las cartas con éxito.</p>';
+    } else {
+      endTitle.textContent = '¡DERROTA!';
+      let txt = '<p>Un jugador jugó una carta mayor y había cartas menores en manos de otros.</p>';
+      if(gd.gameResult && gd.gameResult.revealed && gd.gameResult.revealed.length)
+        txt += `<p>Cartas reveladas: <strong>${gd.gameResult.revealed.join(', ')}</strong></p>`;
+      endDetails.innerHTML = txt;
+    }
+  }
+
+  /* ========== CANCEL / RESET ========== */
+  function cancelGame(){
+    const code = localState.gameCode;
+    if(!code) return resetToSetup();
+    if(DB && localState.isHost){
+      gameRef(code).remove().then(()=> resetToSetup()).catch(()=> resetToSetup());
+    } else if(!DB){
+      sessionStorage.removeItem('mind_game_' + code);
+      resetToSetup();
+    } else {
       resetToSetup();
     }
-    function resetToSetup(){
-      localState={playerId:localState.playerId,players:[],playedCards:[],
-        gameCode:'',cardsPerPlayer:3,totalCards:0,
-        gameStarted:false,gameOver:false,selectedCard:null,isHost:false};
+  }
 
-      setupScreen.classList.add("active");
-      waitingScreen.classList.remove("active");
-      gameScreen.classList.remove("active");
-      endScreen.classList.remove("active");
+  function resetToSetup(){
+    // detach firebase listener if present
+    if(DB && localState.gameCode){
+      try{ gameRef(localState.gameCode).off(); }catch(e){}
     }
-    function m(text,type){
-      msgEl.textContent=text;
-      msgEl.className="message "+type;
-      msgEl.style.display="block";
-      setTimeout(()=>msgEl.style.display="none",2500);
-    }
-    const genCode=()=>Math.random().toString(36).substr(2,4).toUpperCase();
-    function shuffle(a){
-      for(let i=a.length-1;i>0;i--){
-        const j=Math.floor(Math.random()*(i+1));
-        [a[i],a[j]]=[a[j],a[i]];
-      }
-    }
-  })();
+    localState.players = []; localState.playedCards = []; localState.gameCode = '';
+    localState.cardsPerPlayer = 3; localState.totalCards = 0; localState.gameStarted = false; localState.gameOver = false; localState.selectedCard = null; localState.isHost = false;
+    setupScreen.classList.add('active'); waitingScreen.classList.remove('active'); gameScreen.classList.remove('active'); endScreen.classList.remove('active');
+    waitingPlayersEl.innerHTML = ''; playersContainer.innerHTML=''; playedCardsEl.innerHTML=''; msgEl.style.display='none';
+  }
+
+  /* ========== HELPERS ========== */
+  function m(txt, type){
+    if(!msgEl){ alert(txt); return; }
+    msgEl.textContent = txt; msgEl.className = 'message ' + (type || '');
+    msgEl.style.display = 'block';
+    setTimeout(()=> { try{ msgEl.style.display = 'none'; }catch(e){} }, 3000);
+  }
+  const genCode = ()=> Math.random().toString(36).substring(2,6).toUpperCase();
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} }
+
+  // start
+  init();
+  // if DB available, optionally attach global listener for debugging: not necessary
+
+})();
 </script>
+
+<!-- instrucciones rápidas -->
+<!--
+  Para probar online:
+  1) Crea proyecto Firebase, activa Realtime Database y pega su config en firebaseConfig arriba.
+  2) Para pruebas rápidas puedes usar reglas:
+     { "rules": { ".read": true, ".write": true } }
+     (esto deja la DB abierta — solo para pruebas).
+  3) Abre el archivo en 2 dispositivos/navegadores, crea partida desde uno y únete desde otro con el código.
+-->
 
 </body>
 </html>
